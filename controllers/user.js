@@ -1,3 +1,7 @@
+// imports
+const validate = require("../helpers/validate");
+const User = require("../models/user");
+
 // testing
 const testing = (req,res) => {
     return res.status(200).send({
@@ -20,12 +24,38 @@ const register = (req, res) => {
         });
     }
     // Validate data
+    try {
+        validate(params);
+    } catch (error) {
+        return res.status(400).send({
+            status: "error",
+            message: "Validation not passed"
+        });
+    }
 
-    return res.status(200).send({
-        status: "success",
-        message: "Register Method"
+    // Duplicate User Control
+    User.find({
+        $or: [
+            {name: params.email.toLowerCase()},
+            {nick: params.nick.toLowerCase()}
+        ]
+    }).exec( (error, users) => {
+
+        console.log({error,users});
+        // Encrypt password
+
+        // Create User's object
+
+        // Save User to Database
+
+        // Clear Object to return
+
+        // Send response
+        return res.status(200).send({
+            status: "success",
+            message: "Register Method"
+        });
     });
-
 }
 
 
