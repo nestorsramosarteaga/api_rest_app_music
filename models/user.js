@@ -5,9 +5,7 @@ const UserSchema = Schema({
         type: String,
         required: true
     },
-    surname: {
-        type: String
-    },
+    surname: String,
     nick: {
         type: String,
         required: true
@@ -28,11 +26,10 @@ const UserSchema = Schema({
         type: String,
         default: "default.png"
     },
-    createdAt: {
+    created_at: {
         type: Date,
         default: Date.now
     }
 });
 
 module.exports = model("User", UserSchema, "users");
-                // collection: users
