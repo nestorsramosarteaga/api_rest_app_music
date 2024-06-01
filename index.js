@@ -12,7 +12,7 @@ connection();
 
 // Crear servidor de node
 const app = express();
-const port = 3910
+const port = 3911
 
 // Configurar CORS
 app.use(cors());
@@ -20,9 +20,16 @@ app.use(cors());
 // Convertir los datos del body a objetos JS
 app.use(express.urlencoded({extended: true}));
 
-// Cargar configuraciòn rutas
+// Cargar configuracion rutas
 
 // Ruta de prueba
+app.get("/testing", (req, res) => { 
+    return res.status(200).send({
+        "id": 1,
+        "firstname": "Test",
+        "lastname": "AppMusic"
+    });
+});
 
 // Poner el server a escuchar peticiones HTTP
 app.listen(port, () => { 
