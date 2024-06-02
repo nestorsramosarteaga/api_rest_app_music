@@ -77,7 +77,7 @@ const register = (req, res) => {
     .catch((error)=>{
         return res.status(500).send({
             status: "error",
-            message: "An error has occurred",
+            message: "An error has occurred registering the user",
             error
         });
     });
@@ -85,20 +85,61 @@ const register = (req, res) => {
 
 const login = (req, res) => {
     // Collecting data
-
-    // Check Data
+    let params = req.body;
+    // Verify Data
+    if(!params.email || !params.password){
+        return res.status(400).send({
+            status: "error",
+            message: "Required data is missing"
+        });
+    }
 
     // Find user in the database
+    User.findOne({email: params.email})
+    .select("+password")
+    .exec().then((user) =>{
 
-    // Check password
+        if(!user){
+            return res.status(404).send({
+                status: "error",
+                message: "The user does not exist"
+            });
+        }
 
-    // Get Token JWT  (Create service than allow create a token)
+        // Check password
+        let pwd = bcrypt.compareSync(params.password,user.password);
+        if(!pwd){
+            return res.status(404).send({
+                status: "error",
+                message: "Wrong credentials"
+            });
+        }
 
-    // Return user data and Token
-    return res.status(200).send({
-        status: "success",
-        message: "Login Method"
+        // Clear Object to return
+        let identityUser = user.toObject();
+        delete identityUser.password;
+
+        // Get Token JWT  (Create service than allow create a token)
+        
+
+        // Return user data and Token
+        return res.status(200).send({
+            status: "success",
+            message: "Login Method",
+            user: identityUser,
+            token: null
+        });
+
+
+    })
+    .catch((error)=>{
+        return res.status(500).send({
+            status: "error",
+            message: "An error occurred searching for the user",
+            error
+        });
     });
+
 
 }
 
