@@ -2,6 +2,7 @@
 const bcrypt = require("bcrypt");
 const validate = require("../helpers/validate");
 const User = require("../models/user");
+const jwt = require("../helpers/jwt");
 
 // testing
 const testing = (req,res) => {
@@ -96,7 +97,7 @@ const login = (req, res) => {
 
     // Find user in the database
     User.findOne({email: params.email})
-    .select("+password")
+    .select("+password +role")
     .exec().then((user) =>{
 
         if(!user){
@@ -118,16 +119,17 @@ const login = (req, res) => {
         // Clear Object to return
         let identityUser = user.toObject();
         delete identityUser.password;
+        delete identityUser.role;
 
         // Get Token JWT  (Create service than allow create a token)
-        
+        const token = jwt.createToken(user);
 
         // Return user data and Token
         return res.status(200).send({
             status: "success",
             message: "Login Method",
             user: identityUser,
-            token: null
+            token
         });
 
 
