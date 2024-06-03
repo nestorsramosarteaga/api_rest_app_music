@@ -132,7 +132,6 @@ const login = (req, res) => {
             token
         });
 
-
     })
     .catch((error)=>{
         return res.status(500).send({
@@ -141,14 +140,38 @@ const login = (req, res) => {
             error
         });
     });
-
-
 }
 
+
+const profile = (req, res) => {
+
+    // Collecting user id
+    let id = req.params.id;
+
+    // Get user data
+    User.findById(id).then((user) => {
+
+        if(!user) {
+            return res.status(404).send({
+                status: "error",
+                message: "The user does not exist"
+            });
+        }
+
+        //  Return result
+        return res.status(200).send({
+            status: "success",
+            id,
+            user
+        });
+
+    });
+}
 
 // export
 module.exports = {
     testing,
     register,
-    login
+    login,
+    profile
 }
