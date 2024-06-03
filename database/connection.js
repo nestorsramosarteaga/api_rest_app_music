@@ -1,10 +1,14 @@
 const mongoose = require('mongoose');
 
+require('dotenv').config({path:'./.env'})
+
+const dbPort = process.env.DB_PORT || 27017;
+
 const connection = async () => {
 
     try {
 
-        await mongoose.connect("mongodb://localhost:27017/app_music");
+        await mongoose.connect("mongodb://localhost:"+dbPort+"/app_music");
         // Parameters
         // useNewUrlParfer: true
         // useInifiedTopology: true

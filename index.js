@@ -5,6 +5,8 @@ const { connection } = require("./database/connection");
 const express = require('express');
 const cors = require('cors');
 
+const port = process.env.PORT || 3000;
+
 console.log("API REST with nodeJs App Started!");
 
 // Ejecutar conecion a bd
@@ -12,7 +14,6 @@ connection();
 
 // Crear servidor de node
 const app = express();
-const port = 3911
 
 // Configurar CORS
 app.use(cors());
@@ -44,5 +45,3 @@ app.get("/testing", (req, res) => {
 app.listen(port, () => { 
     console.log(`Server running on port ${port}`);
 });
-
-
