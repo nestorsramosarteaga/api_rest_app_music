@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const validate = require("../helpers/validate");
 const User = require("../models/user");
 const jwt = require("../helpers/jwt");
+const { ObjectId } = require('mongodb');
 
 // testing
 const testing = (req,res) => {
@@ -37,7 +38,7 @@ const register = (req, res) => {
     // Duplicate User Control
     User.find({
         $or: [
-            {name: params.email.toLowerCase()},
+            {email: params.email.toLowerCase()},
             {nick: params.nick.toLowerCase()}
         ]
     }).exec().then(async (users) => {
@@ -168,10 +169,105 @@ const profile = (req, res) => {
     });
 }
 
+const update = (req, res) => {
+
+    // Collection of identified user data
+    let userIdentity = req.user;
+
+    // Data Collectin for update
+    let userToUpdate = req.body;
+
+    // Validate data
+    try {
+        validate(userToUpdate);
+    } catch (error) {
+        return res.status(400).send({
+            status: "error",
+            message: "Validation not passed"
+        });
+    }
+
+    // Check if user already exists
+    const searchCriteria = { $or: [] };
+    if (userToUpdate.email) {
+        searchCriteria.$or.push({ email: userToUpdate.email.toLowerCase() });
+    }
+
+    // if (userToUpdate.nick) {
+    //     searchCriteria.$or.push({ nick: userToUpdate.nick.toLowerCase() });
+    // }
+    console.log(searchCriteria);
+    // Check if user already exists
+    if (searchCriteria.$or.length > 0) {
+        User.find(searchCriteria).exec().then(async(users) => {
+
+            // Check if user already exists and if it is not the identified user
+            let userIsset = false;
+            users.forEach(user => {
+                console.log({user, userIdentity, 'equals' : user._id.equals(new ObjectId(userIdentity.id))});
+                if(user && !user._id.equals(new ObjectId(userIdentity.id))) userIsset = true;
+            });
+
+            // If user already exists, Return a response
+            if(userIsset){
+                return res.status(200).send({
+                    status: "success",
+                    message: "User already exists"
+                });
+            }
+
+            // Encrypt password, if it exists in the data
+            if(userToUpdate.password){
+                let pwd = await bcrypt.hash(userToUpdate.password, 10);
+                userToUpdate.password = pwd;
+            } else {
+                delete userToUpdate.password;
+            }
+
+            // Search for user and Update user data
+            try{
+                let userUpdated = await User.findByIdAndUpdate({_id:userIdentity.id}, userToUpdate, {new: true});
+
+                if(!userUpdated){
+                    return res.status(400).send({
+                        status: "error",
+                        message: "Error updating user data."
+                    });
+                }
+
+                // Return success
+                return res.status(200).send({
+                    status: "success",
+                    message: "Update Data User Method",
+                    user: userUpdated
+                });
+            }catch(error){
+                return res.status(500).send({
+                    status: "error",
+                    message: "Error updating user data."
+                });
+            }
+        })
+        .catch((error)=>{
+            return res.status(500).send({
+                status: "error",
+                message: "An error has occurred while searching for users",
+                error
+            });
+        });
+    } else {
+        return res.status(500).send({
+            status: "error",
+            message: "No email or nickname was provided for the search."
+        });
+    }
+}
+
 // export
 module.exports = {
     testing,
     register,
     login,
-    profile
+    profile,
+    update
 }
