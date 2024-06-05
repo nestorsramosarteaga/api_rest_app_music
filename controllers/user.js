@@ -320,6 +320,39 @@ const upload = async (req, res) => {
     });
 }
 
+const avatar = (req, res) => {
+    // Get param of URL
+    const file = req.params.file;
+
+    // Mount the real image path
+    const filePath = './uploads/avatars/' + file;
+
+    // Check if the file exists
+    fs.stat(filePath, (err, stats) => {
+
+        if (err) {
+          if (err.code === 'ENOENT') {
+            return res.status(404).send({
+              status: 'error',
+              message: 'The image does not exist'
+            });
+          }
+          return res.status(500).send({
+            status: 'error',
+            message: 'Error checking the file'
+          });
+        }
+      
+        return res.sendFile(path.resolve(filePath));
+      });
+
+    // return res.status(200).send({
+    //     status: "success",
+    //     message: "Avatar method"
+    // });
+
+}
+
 // export
 module.exports = {
     testing,
@@ -327,5 +360,6 @@ module.exports = {
     login,
     profile,
     update,
-    upload
+    upload,
+    avatar
 }
