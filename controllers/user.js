@@ -3,7 +3,10 @@ const bcrypt = require("bcrypt");
 const validate = require("../helpers/validate");
 const User = require("../models/user");
 const jwt = require("../helpers/jwt");
+const validateImage = require('../helpers/validateImage');
+const fs = require('fs');
 const { ObjectId } = require('mongodb');
+const path = require('path');
 
 // testing
 const testing = (req,res) => {
@@ -196,7 +199,7 @@ const update = (req, res) => {
     // if (userToUpdate.nick) {
     //     searchCriteria.$or.push({ nick: userToUpdate.nick.toLowerCase() });
     // }
-    console.log(searchCriteria);
+   
     // Check if user already exists
     if (searchCriteria.$or.length > 0) {
         User.find(searchCriteria).exec().then(async(users) => {
@@ -204,7 +207,7 @@ const update = (req, res) => {
             // Check if user already exists and if it is not the identified user
             let userIsset = false;
             users.forEach(user => {
-                console.log({user, userIdentity, 'equals' : user._id.equals(new ObjectId(userIdentity.id))});
+                // console.log({user, userIdentity, 'equals' : user._id.equals(new ObjectId(userIdentity.id))});
                 if(user && !user._id.equals(new ObjectId(userIdentity.id))) userIsset = true;
             });
 
@@ -263,11 +266,66 @@ const update = (req, res) => {
     }
 }
 
+const upload = async (req, res) => {
+    // Configuracion multer
+
+    // Collection image file
+    if(!req.file){
+        return res.status(400).send({
+            status: "error",
+            message: "The request not include the image file"
+        });
+    }
+
+    // Get filename
+    let image = req.file.originalname;
+
+    // Get imagen extension
+    const extension = path.extname(req.file.originalname).substring(1);
+
+    // Check if the extension is valid
+    const filePath = req.file.path;
+    if(!validateImage(extension)){
+        // Remove image file        
+        const fileDeleted = fs.unlinkSync(filePath);
+
+        // Return error message
+        return res.status(400).send({
+            status: "error",
+            message: "The file extension isn´t allow"
+        });
+    }
+
+    // If it is OK, then save image in the database
+    const objectId = new ObjectId(req.user.id);
+
+    let userUpdated  = await User.findOneAndUpdate({_id: objectId},{image: req.file.filename},{new:true});
+
+    if(!userUpdated){
+        // Remove image file
+        fs.unlinkSync(filePath);
+
+        // Return error message
+        return res.status(500).send({
+            status: "error",
+            message: "An error has occurred while uploading the image",
+            user: userUpdated
+        });
+    }
+    // Return response
+    return res.status(200).send({
+        status: "success",
+        user: userUpdated,
+        file: req.file
+    });
+}
+
 // export
 module.exports = {
     testing,
     register,
     login,
     profile,
-    update
+    update,
+    upload
 }
