@@ -10,4 +10,4 @@ build/Release
 node_modules/
 jspm_packages/
 
-./.env
+.env
