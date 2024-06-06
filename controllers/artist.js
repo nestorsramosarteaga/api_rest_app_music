@@ -1,4 +1,5 @@
 // Import dependecies
+const artist = require("../models/artist");
 const Artist = require("../models/artist");
 const mongoosePagination = require("mongoose-pagination");
 
@@ -78,27 +79,88 @@ const one = async (req, res) => {
 // Get a list of artists (with pagination)
 
 const list = async (req, res) => {
+    try{
+        // get page
+        let page = 1;
+        if(req.params.page){
+            page = req.params.page;
+        }
 
-    // get page
-    let page = 1;
-    if(req.parms?.page){
-        page = req.parms.page;
-    }
+        // Define artist for page
+        require('dotenv').config({path:'./.env'});
+        const itemsPerPage = parseInt(process.env.ITEM_PER_PAGE) || 5;
 
-    // Define artist for page
-    require('dotenv').config({path:'./.env'});
-    const itemsPerPage = process.env.ITEM_PER_PAGE || 5;
+        // Get total of artists
+        const total = await Artist.countDocuments();
 
-    let artists = await Artist.find()
-        .sort("name")
-        .exec();
+        Artist.find().sort("name")
+        .paginate(page, itemsPerPage).then((artists)=>{
 
-    return res.status(200).send({
-        status: "success",
-        message: "list of artist",
-        artists
+            if(!artists){
+                return res.status(404).send({
+                    status: "error",
+                    message: "The artists have not been found."
+                });
+            }
+
+            return res.status(200).send({
+                status: "success",
+                page,
+                itemsPerPage,
+                total,
+                docs: artists
+            });
+        }).catch((error)=>{
+            return res.status(500).send({
+                status: "error",
+                message: "An error occurred while paginating the Artists",
+                error: error.message
+            });
+        });
+
+    } catch(error) {
+        // handle errors
+        return res.status(500).send({
+            status: "error",
+            message: "An error occurred while listing the Artists",
+            error: error.message
+        });
+    };
+
+}
+
+
+const update = (req, res) => {
+
+    // Collection artsit id from url
+    const  artistId = req.params.id;
+
+    // Collection artist data from body
+    const data = req.body;
+    console.log({data, artistId});
+    // Seacrh and update artist data
+    Artist.findByIdAndUpdate(artistId, data, {new: true}).then( (artistUpdated) => {
+
+        if(!artistUpdated){
+            return res.status(404).send({
+                status: "error",
+                message: "The artist has not been updated"
+            });
+        }
+
+        // Rrturn response
+        return res.status(200).send({
+            status: "success",
+            artist: artistUpdated
+        });
+
+    }).catch((error)=>{
+        return res.status(500).send({
+            status: "success",
+            message: "An error occurred while updating the artist",
+            error: error.message
+        });
     });
-
 }
 
 
@@ -107,5 +169,6 @@ module.exports = {
     testing,
     save,
     one,
-    list
+    list,
+    update
 }
