@@ -10,4 +10,5 @@ build/Release
 node_modules/
 jspm_packages/
 
+# Ignore env files
 .env
