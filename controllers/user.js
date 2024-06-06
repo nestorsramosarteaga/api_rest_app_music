@@ -2,6 +2,7 @@
 const bcrypt = require("bcrypt");
 const validate = require("../helpers/validate");
 const User = require("../models/user");
+const mongoosePagination = require("mongoose-pagination");
 const jwt = require("../helpers/jwt");
 const validateImage = require('../helpers/validateImage');
 const fs = require('fs');
@@ -267,7 +268,7 @@ const update = (req, res) => {
 }
 
 const upload = async (req, res) => {
-    // Configuracion multer
+    // Configuracion multer in routes/user
 
     // Collection image file
     if(!req.file){
@@ -286,7 +287,7 @@ const upload = async (req, res) => {
     // Check if the extension is valid
     const filePath = req.file.path;
     if(!validateImage(extension)){
-        // Remove image file        
+        // Remove image file
         const fileDeleted = fs.unlinkSync(filePath);
 
         // Return error message
@@ -331,25 +332,70 @@ const avatar = (req, res) => {
     fs.stat(filePath, (err, stats) => {
 
         if (err) {
-          if (err.code === 'ENOENT') {
-            return res.status(404).send({
-              status: 'error',
-              message: 'The image does not exist'
+            if (err.code === 'ENOENT') {
+                return res.status(404).send({
+                status: 'error',
+                message: 'The image does not exist'
+                });
+            }
+            return res.status(500).send({
+                status: 'error',
+                message: 'Error checking the file'
             });
-          }
-          return res.status(500).send({
-            status: 'error',
-            message: 'Error checking the file'
-          });
         }
-      
         return res.sendFile(path.resolve(filePath));
-      });
+    });
+}
 
-    // return res.status(200).send({
-    //     status: "success",
-    //     message: "Avatar method"
-    // });
+// Get a list of users (with pagination)
+const list = async (req, res) => {
+    try{
+        // get page
+        let page = 1;
+        if(req.params.page){
+            page = req.params.page;
+        }
+
+        // Define artist for page
+        require('dotenv').config({path:'./.env'});
+        const itemsPerPage = parseInt(process.env.ITEM_PER_PAGE) || 5;
+
+        // Get total of users
+        const total = await User.countDocuments();
+
+        User.find().sort("name")
+        .paginate(page, itemsPerPage).then((users)=>{
+
+            if(!users){
+                return res.status(404).send({
+                    status: "error",
+                    message: "The users have not been found."
+                });
+            }
+
+            return res.status(200).send({
+                status: "success",
+                page,
+                itemsPerPage,
+                total,
+                docs: users
+            });
+        }).catch((error)=>{
+            return res.status(500).send({
+                status: "error",
+                message: "An error occurred while paginating the Users",
+                error: error.message
+            });
+        });
+
+    } catch(error) {
+        // handle errors
+        return res.status(500).send({
+            status: "error",
+            message: "An error occurred while listing the Users",
+            error: error.message
+        });
+    };
 
 }
 
@@ -361,5 +407,6 @@ module.exports = {
     profile,
     update,
     upload,
-    avatar
+    avatar,
+    list
 }

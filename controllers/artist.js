@@ -1,5 +1,4 @@
 // Import dependecies
-const artist = require("../models/artist");
 const Artist = require("../models/artist");
 const mongoosePagination = require("mongoose-pagination");
 
@@ -77,7 +76,6 @@ const one = async (req, res) => {
 }
 
 // Get a list of artists (with pagination)
-
 const list = async (req, res) => {
     try{
         // get page
