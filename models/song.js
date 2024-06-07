@@ -1,0 +1,30 @@
+const {Schema, nodel} = require("mongoose");
+
+const SongSchema = Schema({
+    album: {
+        type: Schema.ObjectId,
+        ref: "Album"
+    },
+    track: {
+        type: Number,
+        required: true
+    },
+    title: {
+        type: String,
+        required: true
+    },
+    duration: {
+        type: String,
+        required: true
+    },
+    file: {
+        type: String,
+        required: true
+    },
+    created_at: {
+        type: Date,
+        default: Date.now
+    }
+})
+
+module.exports = model("Song", SongSchema, "songs");
