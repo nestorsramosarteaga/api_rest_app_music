@@ -67,8 +67,45 @@ const one = (req, res) => {
     .catch((error)=>{
         return res.status(500).send({
             status: "error",
-            message: "An error has occurred seacrhing the album",
-            error
+            message: "An error has occurred while searching the album",
+            error: error.message
+        });
+    });
+}
+
+
+const list = (req, res) => {
+
+    // collection artistId
+    const artistId = req.params.artistId;
+
+    if(!artistId) {
+        return res.status(404).send({
+            status: "error",
+            message: "Artist not found"
+        });
+    }
+
+    Album.find({artist: artistId}).populate("artist").exec().then((albums) => {
+
+        if(!albums){
+            return res.status(404).send({
+                status: "error",
+                message: "Albums not found"
+            });
+        }
+
+        return res.status(200).send({
+            status: "success",
+            albums
+        });
+
+    })
+    .catch((error) => {
+        return res.status(500).send({
+            status: "error",
+            message: "An error has occurred while listing the albums",
+            error: error.message
         });
     });
 }
@@ -77,5 +114,6 @@ const one = (req, res) => {
 module.exports = {
     testing,
     save,
-    one
+    one,
+    list
 }
