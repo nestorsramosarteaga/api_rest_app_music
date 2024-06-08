@@ -110,10 +110,44 @@ const list = (req, res) => {
     });
 }
 
+const update = (req, res) => {
+    // Collection params from url
+    const albumId = req.params.id;
+
+    // Collection data from body
+    const data = req.body;
+
+    // Find and uodate album
+    Album.findByIdAndUpdate(albumId, data, {new: true}).then((albumUpdated)=>{
+
+        if(!albumUpdated){
+            return res.status(404).send({
+                status: "error",
+                message: "The album has not been updated"
+            });
+        }
+
+        // Return response
+        return res.status(200).send({
+            status: "success",
+            albumUpdated
+        });
+
+    })
+    .catch((error)=>{
+        return res.status(500).send({
+            status: "error",
+            message: "An error occurred while updating the album",
+            error: error.message
+        });
+    });
+}
+
 // export
 module.exports = {
     testing,
     save,
     one,
-    list
+    list,
+    update
 }
