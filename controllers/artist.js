@@ -1,5 +1,7 @@
 // Import dependecies
 const Artist = require("../models/artist");
+const Album = require("../models/album");
+const Song = require("../models/song");
 const mongoosePagination = require("mongoose-pagination");
 const validateImage = require('../helpers/validateImage');
 const fs = require('fs');
@@ -173,14 +175,31 @@ const remove = async (req, res) => {
         const artistRemoved = await Artist.findByIdAndDelete(artistId);
 
         // Remove albums
+        // const albumRemoved = await Album.deleteMany({ artist: artistRemoved.id});
+        // console.log(`${albumRemoved.deletedCount} álbumes eliminados`);
+        const albumsRemoved = await Album.find({ artist: artistId });
+        await Album.deleteMany({ artist: artistId });
+        console.log(`${albumsRemoved.length} álbumes eliminados`);
 
-        // Remove songs
+        // Remove songs #TODO Si Hay muchos albums ?
+        const songsRemoved = await Song.find({ album: albumsRemoved.id});
+        await Song.deleteMany({ album: albumsRemoved.id });
+        console.log(`${songsRemoved.length} canciones eliminados`);
+
+        if(!artistRemoved){
+            return res.status(404).send({
+                status: "error",
+                message: "The artist was not found"
+            });
+        }
 
         // Return response
         return res.status(200).send({
             status: "success",
             message: "Artist removed successfully",
-            artistRemoved
+            artistRemoved,
+            albumsRemoved,
+            songsRemoved
         });
 
     } catch(error) {

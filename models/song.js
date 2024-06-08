@@ -1,4 +1,4 @@
-const {Schema, nodel} = require("mongoose");
+const {Schema, model} = require("mongoose");
 
 const SongSchema = Schema({
     album: {
