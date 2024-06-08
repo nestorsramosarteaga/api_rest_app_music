@@ -45,8 +45,37 @@ const save = (req, res) => {
     });
 }
 
+const one = (req, res) => {
+    // Get  albunId
+    const albumId = req.params.id;
+
+    // find and populate Artist data
+    Album.findById(albumId).populate("artist").exec().then((album) => {
+        if(!album){
+            return res.status(404).send({
+                status: "error",
+                message: "Album not found"
+            });
+        }
+
+        return res.status(200).send({
+            status: "success",
+            album
+        });
+
+    })
+    .catch((error)=>{
+        return res.status(500).send({
+            status: "error",
+            message: "An error has occurred seacrhing the album",
+            error
+        });
+    });
+}
+
 // export
 module.exports = {
     testing,
-    save
+    save,
+    one
 }
