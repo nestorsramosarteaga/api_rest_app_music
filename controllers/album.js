@@ -239,6 +239,38 @@ const image = (req, res) => {
 }
 
 
+const remove = async (req, res) => {
+
+    // Collection albumId
+    let albumId = req.params.id;
+
+    try{
+        // Remove songs from album
+        let songsDeleted = await Song.deleteMany({ album: albumId });
+        console.log({songsDeleted});
+        // Remover the albuma
+        const albumRemoved = await Album.deleteOne({ _id: albumId });
+        // Check if the albun was deleted
+        if (albumRemoved.deletedCount === 0) {
+            return res.status(404).send({
+                status: "error",
+                message: "Album not found"
+            });
+        }
+        // Send response
+        return res.status(200).send({
+            status: "success",
+            message: "Album and associated songs removed successfully"
+        });
+    } catch (error){
+        return res.status(500).send({
+            status: "error",
+            message: "An error occurred while removing the album",
+            error: error.message
+        });
+    }
+}
+
 // export
 module.exports = {
     testing,
@@ -247,5 +279,6 @@ module.exports = {
     list,
     update,
     upload,
-    image
+    image,
+    remove
 }
