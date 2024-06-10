@@ -31,7 +31,7 @@ const save = (req, res) => {
         }
 
         // Return response
-        return res.status(200).send({
+        return res.status(201).send({
             status: "success",
             album: albumStored
         });

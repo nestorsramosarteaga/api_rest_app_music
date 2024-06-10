@@ -26,7 +26,7 @@ const save = (req, res) => {
 
     // Save Artist
     artist.save().then( (artistStored) => {
-        
+
         if(!artistStored){
             return res.status(400).send({
                 status: "error",
@@ -34,7 +34,7 @@ const save = (req, res) => {
             });
         }
 
-        return res.status(200).send({
+        return res.status(201).send({
             status: "success",
             artist: artistStored
         });

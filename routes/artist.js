@@ -1,9 +1,11 @@
 // Import dependencies
 const express = require('express');
-const check = require('../middlewares/auth');
 
 // Load Router
 const router = express.Router();
+
+// Import Middlewares
+const check = require('../middlewares/auth');
 
 // Import Controller
 const ArtistController = require('../controllers/artist');
