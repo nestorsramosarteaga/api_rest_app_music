@@ -4,7 +4,6 @@ const Artist = require("../models/artist");
 const Song = require("../models/song");
 const validateImage = require('../helpers/validateImage');
 const fs = require('fs');
-const { ObjectId } = require('mongodb');
 const path = require('path');
 
 // testing
@@ -120,7 +119,7 @@ const update = (req, res) => {
     // Collection data from body
     const data = req.body;
 
-    // Find and uodate album
+    // Find and update album
     Album.findByIdAndUpdate(albumId, data, {new: true}).then((albumUpdated)=>{
 
         if(!albumUpdated){
